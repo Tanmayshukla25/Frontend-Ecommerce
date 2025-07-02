@@ -6,7 +6,7 @@ import Header from "./Header"
 
 function First() {
   const [Cart, setCart] = useState(0);
-  const [addtocartid, setAddtocartid] = useState([]);
+const [addtocartid, setAddtocartid] = useState([]);
   const [data, setData] = useState([]);
   const [Quantity, setQuantity] = useState({}); 
 const [AddtoWishlist,setAddtoWishlist]=useState([])

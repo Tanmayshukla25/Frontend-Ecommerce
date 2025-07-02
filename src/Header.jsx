@@ -1,14 +1,16 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { LuLogIn, LuLogOut } from "react-icons/lu";
 import { UserContext } from "./UserContext";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+
 function Header() {
   const { input, setInput, Cart } = useContext(UserContext);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+  const location = useLocation(); 
 
   const fetchUser = async () => {
     try {
@@ -18,28 +20,34 @@ function Header() {
       setUser(res.data);
     } catch (err) {
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
+ 
   useEffect(() => {
     fetchUser();
-  }, []);
-
+  }, [location]);
 
   const handleLogout = async () => {
     try {
-       const logout= await axios.post("https://ecommerce-api-8ga2.onrender.com/user/logout", {},{
-        withCredentials: true,
-      });
-console.log(logout);
+      const logout = await axios.post(
+        "https://ecommerce-api-8ga2.onrender.com/user/logout",
+        {},
+        { withCredentials: true }
+      );
 
       toast.success("Logout Successfully", {
-            position: "bottom-right",
-            autoClose: 3000,
-          });
-      setUser(null);
-      navigate("/");
+        position: "bottom-right",
+        autoClose: 3000,
+      });
 
+      setUser(null);
+
+      if (logout.status === 200) {
+        navigate("/login");
+      }
     } catch (err) {
       console.error("Logout failed", err);
     }
@@ -47,10 +55,10 @@ console.log(logout);
 
   return (
     <div className="w-full bg-white shadow-md fixed top-0 left-0 z-50">
-        <ToastContainer/>
+      <ToastContainer />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-      
+        
           <div className="flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-900">
               <Link to="/" className="hover:text-blue-600 transition-colors duration-200">
@@ -59,9 +67,9 @@ console.log(logout);
             </h1>
           </div>
 
-       
+     
           <nav className="flex items-center space-x-8">
-          
+         
             <div className="hidden md:block">
               <input
                 type="text"
@@ -72,6 +80,7 @@ console.log(logout);
               />
             </div>
 
+         
             <ul className="flex items-center space-x-6">
               <li>
                 <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200">
@@ -101,8 +110,10 @@ console.log(logout);
                   </sup>
                 </Link>
               </li>
+
+             
               <li>
-                {user ? (
+                {loading ? null : user ? (
                   <button
                     className="p-2 text-gray-700 hover:text-red-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
                     onClick={handleLogout}
