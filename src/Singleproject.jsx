@@ -25,7 +25,7 @@ function Singleproject() {
     setCart,
   } = useContext(UserContext);
 
-  // Fetch the product data using axios
+
   useEffect(() => {
     async function fetchProduct() {
       setLoading(true);
@@ -42,7 +42,7 @@ function Singleproject() {
     if (id) fetchProduct();
   }, [id]);
 
-  // Fetch user using axios
+
   useEffect(() => {
     async function fetchUser() {
       try {

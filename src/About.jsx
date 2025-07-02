@@ -12,7 +12,7 @@ function About() {
           Whether you're upgrading your wardrobe, hunting for the perfect gadget, or finding home essentials, we’re here to make it all possible—fast, simple, and safe.
         </p>
 
-        {/* Section 1 */}
+       
         <div className="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg shadow-sm">
           <FaBoxOpen className="text-blue-600 text-2xl mt-1" />
           <div>
@@ -23,7 +23,7 @@ function About() {
           </div>
         </div>
 
-        {/* Section 2 */}
+   
         <div className="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg shadow-sm">
           <FaTags className="text-green-500 text-2xl mt-1" />
           <div>
@@ -34,7 +34,7 @@ function About() {
           </div>
         </div>
 
-        {/* Section 3 */}
+       
         <div className="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg shadow-sm">
           <FaLock className="text-purple-500 text-2xl mt-1" />
           <div>
@@ -45,7 +45,7 @@ function About() {
           </div>
         </div>
 
-        {/* Section 4 */}
+       
         <div className="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg shadow-sm">
           <FaTruck className="text-orange-500 text-2xl mt-1" />
           <div>
@@ -56,7 +56,7 @@ function About() {
           </div>
         </div>
 
-        {/* Section 5 */}
+       
         <div className="flex items-start space-x-4 bg-gray-50 p-4 rounded-lg shadow-sm">
           <FaHeadset className="text-pink-500 text-2xl mt-1" />
           <div>

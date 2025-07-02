@@ -42,7 +42,7 @@ function Contact() {
       <ToastContainer />
       <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full bg-white shadow-lg rounded-xl p-8">
         
-        {/* Google Map */}
+       
         <div className="rounded-lg overflow-hidden shadow-md">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.241553841478!2d75.78974481125746!3d26.864065576578838!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db3f27d3dad07%3A0xb2641415d32e0c18!2sFull%20Stack%20Learning!5e0!3m2!1sen!2sin!4v1748846291965!5m2!1sen!2sin"
@@ -53,7 +53,7 @@ function Contact() {
           ></iframe>
         </div>
 
-        {/* Contact Form */}
+     
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Contact Us</h2>
           <form onSubmit={handleSubmit} className="space-y-5">

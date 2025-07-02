@@ -7,7 +7,7 @@ function Cart() {
   const [products, setProducts] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  // Fetch product data for items in the cart using axios
+  
   useEffect(() => {
     async function fetchData() {
       if (addtocartid.length === 0) return;
