@@ -7,27 +7,50 @@ import axios from "axios";
 function Home() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const { input } = useContext(UserContext);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const response = await axios.get("https://ecommerce-api-8ga2.onrender.com/api/product");
-        setProducts(response.data);
-        console.log(products);
-        
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        setLoading(false);
-      }
-    }
+  const fetchData = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
 
+    try {
+      const response = await axios.get( 
+        `https://ecommerce-api-8ga2.onrender.com/api/product?page=${page}&limit=12`
+      );
+
+      if (response.data.length === 0) {
+        setHasMore(false);
+      } else {
+        setProducts(prev => [...prev, ...response.data]);
+        setPage(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 100 >=
+        document.documentElement.offsetHeight
+      ) {
+        fetchData();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [page, loading]);
 
   useEffect(() => {
     if (input.trim()) {
@@ -43,17 +66,6 @@ function Home() {
 
   const displayProducts = input.trim() ? filteredProducts : products;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600 font-medium">Loading products...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,26 +80,18 @@ function Home() {
 
         {displayProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-600 text-center max-w-md">
               {input.trim()
-                ? `We couldn't find any products matching "${input}". Try searching with different keywords.`
+                ? `We couldn't find any products matching "${input}". Try different keywords.`
                 : "No products available at the moment."}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {displayProducts.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group"
-              >
-                <Link to={`/product/${product._id}`} className="block">
+              <div key={product._id} className="bg-white rounded-lg shadow hover:shadow-md transition overflow-hidden group">
+                <Link to={`/product/${product._id}`}>
                   <div className="aspect-square p-4 bg-gray-50 flex items-center justify-center overflow-hidden">
                     <img
                       src={product.url}
@@ -96,13 +100,10 @@ function Home() {
                     />
                   </div>
                 </Link>
-
                 <div className="p-4">
                   <Link to={`/product/${product._id}`}>
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors duration-200">
-                      {product.name.length > 50
-                        ? `${product.name.slice(0, 50)}...`
-                        : product.name}
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600">
+                      {product.name.length > 50 ? product.name.slice(0, 50) + "..." : product.name}
                     </h3>
                   </Link>
 
@@ -137,15 +138,22 @@ function Home() {
                           </svg>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600">
-                        ({product.rating.count})
-                      </span>
+                      <span className="text-sm text-gray-600">({product.rating.count})</span>
                     </div>
                   )}
                 </div>
               </div>
             ))}
           </div>
+        )}
+
+        {loading && (
+          <div className="flex justify-center py-8">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+        {!hasMore && (
+          <p className="text-center text-gray-500 text-sm mt-6">No more products to load.</p>
         )}
       </div>
     </div>
