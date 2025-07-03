@@ -8,13 +8,23 @@ function First() {
   const [addtocartid, setAddtocartid] = useState([]);
   const [data, setData] = useState([]);
   const [Quantity, setQuantity] = useState({});
-  const [AddtoWishlist, setAddtoWishlist] = useState([]);
+  const [wishlistIds, setWishlistIds] = useState([]);
   const [input, setInput] = useState("");
+
+  const AddtoWishlist = (productId) => {
+    setWishlistIds((prev) => {
+      if (prev.includes(productId)) return prev;
+      return [...prev, productId];
+    });
+  };
+
   return (
     <UserContext.Provider
       value={{
         Cart,
         setCart,
+        wishlistIds,
+        setWishlistIds,
         addtocartid,
         setAddtocartid,
         data,
@@ -22,7 +32,6 @@ function First() {
         Quantity,
         setQuantity,
         AddtoWishlist,
-        setAddtoWishlist,
         input,
         setInput,
       }}

@@ -11,6 +11,7 @@ import Register from "./Register.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 import PageNotFound from "./PageNotFound.jsx";
 import "./App.css"
+import AddToCart from "./AddToCart.jsx";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,16 @@ const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "blog", element: <Blog /> },
       { path: "/*", element: <PageNotFound /> },
+
+
+        {
+        path: "AddToCart",
+        element: (
+          <ProtectedRoute>
+       <AddToCart /> 
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "cart",
         element: (

@@ -15,22 +15,25 @@ function Singleproject() {
   const [disabled, setDisabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   const {
-    AddtoWishlist,
+    wishlistIds,
+    setWishlistIds,
     addtocartid,
     setAddtocartid,
     Cart,
     setCart,
   } = useContext(UserContext);
 
+  const isWishlisted = wishlistIds.includes(product?.id);
 
   useEffect(() => {
     async function fetchProduct() {
       setLoading(true);
       try {
-        const { data } = await axios.get(`https://ecommerce-api-8ga2.onrender.com/api/product/${id}`);
+        const { data } = await axios.get(
+          `https://ecommerce-api-8ga2.onrender.com/api/product/${id}`
+        );
         setProduct(data);
       } catch (e) {
         console.error("Error fetching product:", e);
@@ -42,15 +45,14 @@ function Singleproject() {
     if (id) fetchProduct();
   }, [id]);
 
-
   useEffect(() => {
     async function fetchUser() {
       try {
-        const { data } = await axios.get("https://ecommerce-api-8ga2.onrender.com/user/me", {
-          withCredentials: true,
-        });
+        const { data } = await axios.get(
+          "https://ecommerce-api-8ga2.onrender.com/user/me",
+          { withCredentials: true }
+        );
         setCurrentUser(data);
-        console.log(data);
       } catch (e) {
         console.error("User fetch error:", e);
         setCurrentUser(null);
@@ -74,15 +76,24 @@ function Singleproject() {
     }
   }
 
-  function handleWishlist() {
-    if (!currentUser) {
-      navigate(`/login?referer=${encodeURIComponent(location.pathname)}`);
-      return;
-    }
-
-    setIsWishlisted(!isWishlisted);
-    AddtoWishlist(product.id);
+function handleWishlist() {
+  if (!currentUser) {
+    navigate(`/login?referer=${encodeURIComponent(location.pathname)}`);
+    return;
   }
+
+  if (!product?._id) {
+    console.warn("Product _id is undefined");
+    return;
+  }
+
+  if (!wishlistIds.includes(product._id)) {
+    setWishlistIds([...wishlistIds, product._id]); // ✅ use _id
+  } else {
+    setWishlistIds(wishlistIds.filter((itemId) => itemId !== product._id));
+  }
+}
+
 
   if (loading) {
     return (
@@ -186,7 +197,7 @@ function Singleproject() {
                   }`}
                 >
                   <FaHeart size={20} className={isWishlisted ? "fill-current" : ""} />
-                  <span>{isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}</span>
+                  <span>{isWishlisted ? "Wishlisted" : "Add to Wishlist"}</span>
                 </button>
               </div>
 

@@ -7,87 +7,68 @@ function Cart() {
   const [products, setProducts] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  
   useEffect(() => {
-    async function fetchData() {
-      if (addtocartid.length === 0) return;
+    if (addtocartid.length === 0) return;
 
-      try {
-        const results = await Promise.all(
-          addtocartid.map(async (id) => {
-            const response = await axios.get(`https://ecommerce-api-8ga2.onrender.com/api/product/${id}`);
-            return response.data;
-          })
-        );
+    async function fetchCartItemsSequentially() {
+      const items = [];
 
-       
-        const newQuantities = {};
-        results.forEach((item) => {
-          if (!Quantity[item.id]) newQuantities[item.id] = 1;
-        });
-        setQuantity((prev) => ({ ...prev, ...newQuantities }));
-
-        setProducts(results);
-      } catch (error) {
-        console.error("Failed to fetch cart products:", error);
+      for (let id of addtocartid) {
+        try {
+          const response = await axios.get(`https://ecommerce-api-8ga2.onrender.com/api/product/${id}`);
+          items.push(response.data);
+        } catch (err) {
+          console.error(`Error fetching product ${id}:`, err);
+        }
       }
+
+ 
+      const initialQty = {};
+      items.forEach(item => {
+        if (!Quantity[item.id]) initialQty[item.id] = 1;
+      });
+      setQuantity(prev => ({ ...prev, ...initialQty }));
+
+      setProducts(items);
     }
 
-    fetchData();
+    fetchCartItemsSequentially();
   }, [addtocartid]);
 
-
-  function increment(id) {
-    setQuantity((prev) => ({
-      ...prev,
-      [id]: (prev[id] || 1) + 1,
-    }));
-  }
-
- 
-  function decrement(id) {
-    setQuantity((prev) => ({
-      ...prev,
-      [id]: Math.max(1, (prev[id] || 1) - 1),
-    }));
-  }
-
- 
-  function removeFromCart(index, productId) {
-    const updatedProducts = products.filter((_, i) => i !== index);
-    setProducts(updatedProducts);
-
-    const updatedIds = [...addtocartid];
-    updatedIds.splice(index, 1);
-    setAddtocartid(updatedIds);
-
-    setCart(Cart - 1);
-
-    const updatedQuantities = { ...Quantity };
-    delete updatedQuantities[productId];
-    setQuantity(updatedQuantities);
-  }
-
-  
   useEffect(() => {
     let total = 0;
-    products.forEach((item) => {
-      const qty = Quantity[item.id] || 1;
-      total += item.price * qty;
+    products.forEach(item => {
+      total += item.price * (Quantity[item.id] || 1);
     });
     setTotalAmount(total);
   }, [products, Quantity]);
 
+  const increment = (id) => {
+    setQuantity(prev => ({ ...prev, [id]: (prev[id] || 1) + 1 }));
+  };
+
+  const decrement = (id) => {
+    setQuantity(prev => ({ ...prev, [id]: Math.max(1, (prev[id] || 1) - 1) }));
+  };
+
+  const removeFromCart = (index, id) => {
+    setProducts(prev => prev.filter((_, i) => i !== index));
+    const newIds = [...addtocartid];
+    newIds.splice(index, 1);
+    setAddtocartid(newIds);
+    setCart(prev => prev - 1);
+
+    const updatedQty = { ...Quantity };
+    delete updatedQty[id];
+    setQuantity(updatedQty);
+  };
+
   if (addtocartid.length === 0) {
-    return (
-      <h1 className="text-center text-2xl font-semibold text-gray-700 mt-24">
-        🛒 Cart is empty
-      </h1>
-    );
+    return <h2 className="text-center mt-24 text-xl font-semibold">🛒 Your cart is empty!</h2>;
   }
 
   return (
-    <div className="mt-24 w-full mx-auto px-4 space-y-6">
+       <div className="mt-24 w-full mx-auto px-4 space-y-6">
       {products.map((item, index) => (
         <div
           key={item.id}
