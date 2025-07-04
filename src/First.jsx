@@ -7,9 +7,12 @@ function First() {
   const [Cart, setCart] = useState(0);
   const [addtocartid, setAddtocartid] = useState([]);
   const [data, setData] = useState([]);
-  const [Quantity, setQuantity] = useState({});
+  const [Quantity, setQuantity] = useState(1);
   const [wishlistIds, setWishlistIds] = useState([]);
   const [input, setInput] = useState("");
+  const [cartItems, setCartItems] = useState([]);
+  const [user, setUser] = useState(null);
+   const [loading, setLoading] = useState(true);
 
   const AddtoWishlist = (productId) => {
     setWishlistIds((prev) => {
@@ -18,27 +21,36 @@ function First() {
     });
   };
 
+  console.log(Cart);
+  
   return (
-    <UserContext.Provider
-      value={{
-        Cart,
-        setCart,
-        wishlistIds,
-        setWishlistIds,
-        addtocartid,
-        setAddtocartid,
-        data,
-        setData,
-        Quantity,
-        setQuantity,
-        AddtoWishlist,
-        input,
-        setInput,
-      }}
-    >
-      <Header />
-      <Outlet />
-    </UserContext.Provider>
+  <UserContext.Provider
+  value={{
+    Cart,
+    setCart,
+    wishlistIds,
+    setUser,
+    loading,
+    setLoading,
+    user,
+    setWishlistIds,
+    addtocartid,
+    setAddtocartid,
+    setCartItems,
+    cartItems,
+    data,
+    setData,
+    Quantity,
+    setQuantity,
+    AddtoWishlist,
+    input,
+    setInput,
+  }}
+>
+  <Header />
+  <Outlet />
+</UserContext.Provider>
+
   );
 }
 

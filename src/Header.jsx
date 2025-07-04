@@ -7,7 +7,7 @@ import { UserContext } from "./UserContext";
 import axios from "axios";
 
 function Header() {
-  const { input, setInput, Cart, wishlistIds } = useContext(UserContext);
+  const { input, setInput, Cart, wishlistIds, setCart } = useContext(UserContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +17,7 @@ function Header() {
 
   useEffect(() => {
     fetchUser();
+    fetchCartCount();
   }, [location]);
 
   const fetchUser = async () => {
@@ -33,6 +34,19 @@ function Header() {
     }
   };
 
+  const fetchCartCount = async () => {
+    try {
+      const res = await axios.get(
+        "https://ecommerce-api-8ga2.onrender.com/api/cart/get",
+        { withCredentials: true }
+      );
+      setCart(res.data.items.length || 0);
+    } catch (err) {
+      console.error("Error fetching cart count:", err);
+      setCart(0);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const res = await axios.post(
@@ -45,6 +59,7 @@ function Header() {
         autoClose: 3000,
       });
       setUser(null);
+      setCart(0);
       if (res.status === 200) navigate("/login");
     } catch (err) {
       console.error("Logout failed", err);
@@ -60,7 +75,6 @@ function Header() {
             <Link to="/" className="hover:text-blue-600">Ecommerce</Link>
           </div>
 
-          {/* Hamburger Menu (Mobile) */}
           <div className="md:hidden">
             <button
               className="text-gray-700"
@@ -70,7 +84,6 @@ function Header() {
             </button>
           </div>
 
-          {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             <input
               type="text"
@@ -85,7 +98,6 @@ function Header() {
             <Link to="/contact" className="hover:text-blue-600 text-gray-700">Contact</Link>
             <Link to="/blog" className="hover:text-blue-600 text-gray-700">Blog</Link>
 
-            {/* Cart */}
             <Link to="/cart" className="relative text-gray-700 hover:text-blue-600">
               Cart
               <sup className="absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -93,18 +105,13 @@ function Header() {
               </sup>
             </Link>
 
-            {/* Wishlist */}
-            <Link
-              to="/AddToCart"
-              className="relative text-gray-700 hover:text-blue-600"
-            >
+            <Link to="/AddToCart" className="relative text-gray-700 hover:text-blue-600">
               <FaHeart size={20} />
               <sup className="absolute -top-2 -right-4 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {wishlistIds.length}
               </sup>
             </Link>
 
-            {/* Login/Logout */}
             {loading ? null : user ? (
               <button
                 onClick={handleLogout}
@@ -126,7 +133,6 @@ function Header() {
           </nav>
         </div>
 
-        {/* Mobile Dropdown Menu */}
         {menuOpen && (
           <div className="md:hidden mt-2 space-y-4 transition-all">
             <input

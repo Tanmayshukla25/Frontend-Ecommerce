@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect} from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useContext } from "react";
+import { UserContext } from "./UserContext";
 
 function ProtectedRoute({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const {setUser,user ,setLoading,loading} = useContext(UserContext);
+ 
   const location = useLocation();
 
   useEffect(() => {

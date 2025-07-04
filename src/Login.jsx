@@ -3,6 +3,8 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useLocation, Link, useSearchParams } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { UserContext } from "./UserContext";
+import { useContext } from "react";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -10,7 +12,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
    const [role, setRole] = useState("user");
-
+const { Cart,setCart } = useContext(UserContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -41,7 +43,7 @@ function Login() {
 
       setEmail("");
       setPassword("");
-
+//  setCart(res.data.items.length);
       setTimeout(() => navigate(from, { replace: true }), 3000);
     } catch (err) {
       toast.error(err.response?.data?.message || "Login Failed. Please check credentials.", {

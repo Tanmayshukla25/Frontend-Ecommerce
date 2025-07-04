@@ -1,121 +1,135 @@
 import React, { useEffect, useState, useContext } from "react";
-import { UserContext } from "./UserContext";
 import axios from "axios";
+import { UserContext } from "./UserContext";
+import { RxCross2 } from "react-icons/rx";
+import { PiCurrencyDollarBold } from "react-icons/pi";
+import { ToastContainer, toast } from "react-toastify";
+
 
 function Cart() {
-  const { addtocartid, setAddtocartid, Cart, setCart, Quantity, setQuantity } = useContext(UserContext);
-  const [products, setProducts] = useState([]);
+  const { Cart, setCart, cartItems, setCartItems } = useContext(UserContext);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
+  // ✅ Fetch cart data on component mount
   useEffect(() => {
-    if (addtocartid.length === 0) return;
-
-    async function fetchCartItemsSequentially() {
-      const items = [];
-
-      for (let id of addtocartid) {
-        try {
-          const response = await axios.get(`https://ecommerce-api-8ga2.onrender.com/api/product/${id}`);
-          items.push(response.data);
-        } catch (err) {
-          console.error(`Error fetching product ${id}:`, err);
-        }
+    async function fetchCart() {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          "https://ecommerce-api-8ga2.onrender.com/api/cart/get",
+          { withCredentials: true }
+        );
+        setCartItems(res.data.items);
+        setCart(res.data.items.length); // ✅ Update context Cart count
+      } catch (err) {
+        console.error("Cart fetch error:", err);
+      } finally {
+        setLoading(false);
       }
-
- 
-      const initialQty = {};
-      items.forEach(item => {
-        if (!Quantity[item.id]) initialQty[item.id] = 1;
-      });
-      setQuantity(prev => ({ ...prev, ...initialQty }));
-
-      setProducts(items);
     }
 
-    fetchCartItemsSequentially();
-  }, [addtocartid]);
+    fetchCart();
+  }, []);
 
+  // ✅ Calculate total amount whenever cartItems change
   useEffect(() => {
-    let total = 0;
-    products.forEach(item => {
-      total += item.price * (Quantity[item.id] || 1);
-    });
+    const total = cartItems.reduce(
+      (acc, item) => acc + item.product?.price * item.quantity,
+      0
+    );
     setTotalAmount(total);
-  }, [products, Quantity]);
+  }, [cartItems]);
 
-  const increment = (id) => {
-    setQuantity(prev => ({ ...prev, [id]: (prev[id] || 1) + 1 }));
-  };
+  // ✅ Remove item from cart
+  async function handleRemoveItem(productId) {
+    try {
+      await axios.post(
+        "https://ecommerce-api-8ga2.onrender.com/api/cart/remove",
+        { productId },
+        { withCredentials: true }
+      );
 
-  const decrement = (id) => {
-    setQuantity(prev => ({ ...prev, [id]: Math.max(1, (prev[id] || 1) - 1) }));
-  };
+      // Filter out removed item
+      const updatedItems = cartItems.filter(
+        (item) => item.product._id !== productId
+      );
+      setCartItems(updatedItems);
+      setCart(updatedItems.length); 
+      toast.success("Removed from Cart", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      console.error("Remove error:", error);
+    }
+  }
 
-  const removeFromCart = (index, id) => {
-    setProducts(prev => prev.filter((_, i) => i !== index));
-    const newIds = [...addtocartid];
-    newIds.splice(index, 1);
-    setAddtocartid(newIds);
-    setCart(prev => prev - 1);
-
-    const updatedQty = { ...Quantity };
-    delete updatedQty[id];
-    setQuantity(updatedQty);
-  };
-
-  if (addtocartid.length === 0) {
-    return <h2 className="text-center mt-24 text-xl font-semibold">🛒 Your cart is empty!</h2>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   return (
-       <div className="mt-24 w-full mx-auto px-4 space-y-6">
-      {products.map((item, index) => (
-        <div
-          key={item.id}
-          className="flex flex-col md:flex-row items-center justify-between border rounded-lg shadow-md p-4 bg-white"
-        >
-          <div className="w-52 h-42 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-md">
-            <img src={item.url} alt={item.title} className="h-42 object-contain" />
-          </div>
+    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-8">
+      <ToastContainer />
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">Your Shopping Cart</h2>
 
-          <div className="flex-1 md:ml-6 mt-4 md:mt-0 space-y-1">
-            <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
-            <h3 className="text-gray-600">Price: ${item.price}</h3>
-            <h3 className="text-gray-600">Rating: {item.rating?.rate}</h3>
-            <h3 className="text-gray-600">Count: {item.rating?.count}</h3>
-            <div className="flex items-center mt-2 space-x-3">
-              <button
-                onClick={() => decrement(item.id)}
-                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        {cartItems.length === 0 ? (
+          <div className="bg-white p-6 rounded-lg shadow text-center text-gray-600">
+            Your cart is empty.
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-6 space-y-6">
+            {cartItems.map((item) => (
+              <div
+                key={item.product._id}
+                className="flex flex-col sm:flex-row items-center justify-between border-b pb-4"
               >
-                -
-              </button>
-              <span className="font-medium text-gray-700">{Quantity[item.id] || 1}</span>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={item.product.image}
+                    alt={item.product.title}
+                    className="w-24 h-24 object-contain rounded-lg"
+                  />
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">{item.product.title}</h3>
+                    <p className="text-sm text-gray-500">{item.product.category}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 mt-4 sm:mt-0">
+                  <span className="text-xl font-bold text-green-600 flex items-center">
+                    <PiCurrencyDollarBold />
+                    {item.product.price}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveItem(item.product._id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <RxCross2 size={20} />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="text-right pt-4 border-t mt-4">
+              <p className="text-xl font-semibold text-gray-700">
+                Total:{" "}
+                <span className="text-green-600">${totalAmount.toFixed(2)}</span>
+              </p>
               <button
-                onClick={() => increment(item.id)}
-                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                className="mt-4 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
               >
-                +
+                Proceed to Checkout
               </button>
             </div>
           </div>
-
-          <div className="mt-4 md:mt-0 md:ml-6 text-right">
-            <span className="block text-sm text-gray-500 mb-1">Remove</span>
-            <button
-              onClick={() => removeFromCart(index, item.id)}
-              className="text-red-500 text-2xl hover:text-red-700"
-            >
-              &times;
-            </button>
-          </div>
-        </div>
-      ))}
-
-      <hr className="border-t border-gray-300" />
-
-      <div className="text-right text-xl font-semibold text-gray-800">
-        GRAND TOTAL: ${totalAmount.toFixed(2)}
+        )}
       </div>
     </div>
   );

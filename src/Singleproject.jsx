@@ -5,9 +5,12 @@ import { UserContext } from "./UserContext";
 import { HiMiniShoppingCart } from "react-icons/hi2";
 import { FaHeart, FaStar, FaArrowLeft } from "react-icons/fa";
 import { PiCurrencyDollarBold } from "react-icons/pi";
+import { ToastContainer, toast } from "react-toastify";
 
 function Singleproject() {
   const { id } = useParams();
+  // console.log(id);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,13 +22,15 @@ function Singleproject() {
   const {
     wishlistIds,
     setWishlistIds,
-    addtocartid,
-    setAddtocartid,
+
+    Quantity,
+
     Cart,
     setCart,
   } = useContext(UserContext);
+  // console.log(Quantity);
 
-  const isWishlisted = wishlistIds.includes(product?.id);
+  const isWishlisted = wishlistIds.includes(product?._id);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -62,42 +67,61 @@ function Singleproject() {
     fetchUser();
   }, []);
 
-  function handleAddCart() {
+  async function handleAddCart() {
     if (!currentUser) {
       navigate(`/login?referer=${encodeURIComponent(location.pathname)}`);
       return;
     }
 
-    if (id && !disabled) {
-      setDisabled(true);
-      setCart(Cart + 1);
-      setAddtocartid([...addtocartid, id]);
+    try {
+      await axios.post(
+        "https://ecommerce-api-8ga2.onrender.com/api/cart/add",
+        {
+          productId: id,
+          quantity: Quantity,
+        },
+        { withCredentials: true }
+      );
+
+      const res = await axios.get(
+        "https://ecommerce-api-8ga2.onrender.com/api/cart/get",
+        { withCredentials: true }
+      );
+      setCart(res.data.items.length);
+
+      toast.success("Added to Cart Successfully", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+
       navigate("/cart");
+    } catch (error) {
+      console.log(`Error: ${error}`);
     }
   }
 
-function handleWishlist() {
-  if (!currentUser) {
-    navigate(`/login?referer=${encodeURIComponent(location.pathname)}`);
-    return;
-  }
+  function handleWishlist() {
+    if (!currentUser) {
+      navigate(`/login?referer=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
 
-  if (!product?._id) {
-    console.warn("Product _id is undefined");
-    return;
-  }
+    if (!product?._id) {
+      console.warn("Product _id is undefined");
+      return;
+    }
 
-  if (!wishlistIds.includes(product._id)) {
-    setWishlistIds([...wishlistIds, product._id]); // ✅ use _id
-  } else {
-    setWishlistIds(wishlistIds.filter((itemId) => itemId !== product._id));
+    if (!wishlistIds.includes(product._id)) {
+      setWishlistIds([...wishlistIds, product._id]);
+    } else {
+      setWishlistIds(wishlistIds.filter((itemId) => itemId !== product._id));
+    }
   }
-}
-
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <ToastContainer />
         <div className="flex flex-col items-center space-y-4">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-600 font-medium">Loading product...</p>
@@ -107,7 +131,7 @@ function handleWishlist() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen mt-20 bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
@@ -134,7 +158,9 @@ function handleWishlist() {
                 </span>
               )}
 
-              <h1 className="text-3xl font-bold text-gray-900">{product.title}</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {product.title}
+              </h1>
 
               {product.rating && (
                 <div className="flex items-center space-x-2">
@@ -170,7 +196,9 @@ function handleWishlist() {
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Description</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Description
+                </h3>
                 <p className="text-gray-700">{product.description}</p>
               </div>
 
@@ -196,7 +224,10 @@ function handleWishlist() {
                       : "bg-white border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600"
                   }`}
                 >
-                  <FaHeart size={20} className={isWishlisted ? "fill-current" : ""} />
+                  <FaHeart
+                    size={20}
+                    className={isWishlisted ? "fill-current" : ""}
+                  />
                   <span>{isWishlisted ? "Wishlisted" : "Add to Wishlist"}</span>
                 </button>
               </div>
@@ -230,7 +261,9 @@ function handleWishlist() {
         </div>
 
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            You Might Also Like
+          </h2>
           <div className="bg-white rounded-lg p-6 text-center text-gray-500">
             <p>Related products will be displayed here</p>
           </div>

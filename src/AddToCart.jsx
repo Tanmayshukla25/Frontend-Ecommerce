@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "./UserContext";
 import axios from "axios";
-
+import { RxCross2 } from "react-icons/rx";
 const AddToCart = () => {
   const { wishlistIds, setWishlistIds } = useContext(UserContext);
   const [products, setProducts] = useState([]);
@@ -66,7 +66,7 @@ const AddToCart = () => {
             onClick={() => removeFromWishlist(item._id)}
             className="text-red-500 text-2xl hover:text-red-700 mt-4 md:mt-0"
           >
-            &times;
+       <RxCross2 />
           </button>
         </div>
       ))}
